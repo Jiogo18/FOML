@@ -11,6 +11,7 @@ import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.client.util.ModelIdentifier;
+import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
@@ -19,6 +20,7 @@ import net.minecraft.util.math.Vec3f;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.function.Function;
 
 /***
@@ -43,8 +45,9 @@ public class ItemOBJLoader implements ModelVariantProvider, Function<ResourceMan
             Identifier modelPath = new Identifier (modelId.getNamespace (),
                     "models/item/" + modelId.getPath () + ".json");
 
-            if (resourceManager.containsResource(modelPath)) {
-                try (Reader reader = new InputStreamReader(resourceManager.getResource(modelPath).getInputStream())) {
+            Optional<Resource> resource = resourceManager.getResource(modelPath);
+            if (resource.isPresent()) {
+                try (Reader reader = new InputStreamReader(resource.get().getInputStream())) {
                     JsonObject rawModel = JsonHelper.deserialize(reader);
 
                     JsonElement parent = rawModel.get("parent");

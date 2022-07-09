@@ -16,6 +16,7 @@ import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
+import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
@@ -30,7 +31,7 @@ import java.util.function.Function;
 
 import static com.mojang.logging.LogUtils.getLogger;
 
-public class OBJUnbakedModel implements UnbakedModel {
+public class OBJUnbakedModel extends JsonUnbakedModel {
 
     public static final SpriteIdentifier DEFAULT_SPRITE = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, null);
 
@@ -40,6 +41,7 @@ public class OBJUnbakedModel implements UnbakedModel {
     private final SpriteIdentifier sprite;
 
     public OBJUnbakedModel(Obj obj, Map<String, FOMLMaterial> mtls, ModelTransformation transform) {
+        super(null, List.of(), Map.of(), false, GuiLight.BLOCK, transform, List.of());
         this.obj = obj;
         this.mtls = mtls;
         this.transform = transform == null ? ModelTransformation.NONE : transform;

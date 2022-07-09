@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static com.mojang.logging.LogUtils.getLogger;
@@ -51,13 +52,13 @@ public class OBJLoader implements ModelResourceProvider, Function<ResourceManage
         for (String name : mtlNames) {
             Identifier resourceId = new Identifier(modid, "models/" + name);
             // Use 1.0.0 MTL path as a fallback
-            if (!manager.containsResource(resourceId)) {
+            if (!manager.getResource(resourceId).isPresent()) {
                 resourceId = new Identifier(modid, "models/block/" + name);
             }
 
             // Continue with normal resource loading code
-            if(manager.containsResource(resourceId)) {
-                Resource resource = manager.getResource(resourceId);
+            if(manager.getResource(resourceId).isPresent()) {
+                Resource resource = manager.getResource(resourceId).get();
 
                 MtlReader.read(resource.getInputStream()).forEach(mtl -> {
                     if (mtl.getMapKd() != null) mtls.put(mtl.getName(), mtl);
@@ -81,11 +82,16 @@ public class OBJLoader implements ModelResourceProvider, Function<ResourceManage
                                           ModelTransformation transform) {
         if(identifier.getPath().endsWith(".obj")) {
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
-
-            try (Reader reader = new InputStreamReader(resourceManager.getResource(new Identifier(identifier.getNamespace(), "models/" + identifier.getPath())).getInputStream())) {
-                return loadModel(reader, identifier.getNamespace(), resourceManager, transform);
-            } catch (IOException e) {
-                FOML.LOGGER.error("Unable to load OBJ Model, Source: " + identifier.toString(), e);
+            Optional<Resource> resource = resourceManager.getResource(new Identifier(identifier.getNamespace(), "models/" + identifier.getPath()));
+            if(resource.isPresent()) {
+                try (Reader reader = new InputStreamReader(resource.get().getInputStream())) {
+                    return loadModel(reader, identifier.getNamespace(), resourceManager, transform);
+                } catch (IOException e) {
+                    FOML.LOGGER.error("Unable to load OBJ Model, Source: " + identifier.toString(), e);
+                }
+            }
+            else {
+                FOML.LOGGER.error("Unable to load OBJ Model, Source: " + identifier.toString());
             }
         }
 

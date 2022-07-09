@@ -13,10 +13,10 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
 
 import java.util.List;
-import java.util.Random;
 import java.util.function.Supplier;
 
 public record OBJBakedModel(Mesh mesh,
@@ -65,7 +65,7 @@ public record OBJBakedModel(Mesh mesh,
 
     @Override
     public Sprite getParticleSprite() {
-        return null;
+        return sprite;
     }
 
     @Override
