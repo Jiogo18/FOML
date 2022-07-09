@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import de.javagl.obj.FloatTuple;
 import de.javagl.obj.Mtl;
 import de.javagl.obj.Obj;
+import de.javagl.obj.ObjFace;
 import de.javagl.obj.ObjSplitting;
 import dev.ender.foml.obj.FOMLMaterial;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
@@ -87,21 +88,22 @@ public class OBJUnbakedModel extends JsonUnbakedModel {
 
                 FOMLMaterial mtl = findMtlForName(matName);
                 int color = -1;
+                int luminosity = -1;
 
                 Sprite mtlSprite = textureGetter.apply(DEFAULT_SPRITE);
 
                 if(mtl != null) {
+                    double opacity = mtl.getD();
                     FloatTuple diffuseColor = mtl.getKd();
 
-                    if (mtl.useDiffuseColor()) {
-                        color = 0xFF000000;
-
-                        for (int i = 0; i < 3; ++i) {
-                            color |= (int) (255 * diffuseColor.get(i)) << (16 - 8 * i);
-                        }
+                    if (mtl.useDiffuseColor())
+                    {
+                        color = (int)(0x01 * opacity) << 24 | (int)(0xFF * diffuseColor.get(0)) << 16 | (int)(0xFF * diffuseColor.get(1)) << 8 | (int)(0xFF * diffuseColor.get(2));
                     }
 
                     mtlSprite = getMtlSprite(textureGetter, new Identifier(mtl.getMapKd()));
+
+                    luminosity = mtl.getIllum();
                 }
 
                 for (int i = 0; i < matGroupObj.getNumFaces(); i++) {
@@ -109,16 +111,17 @@ public class OBJUnbakedModel extends JsonUnbakedModel {
                     Vec3f vertex;
                     FloatTuple normal;
                     int v;
-                    for (v = 0; v < matGroupObj.getFace(i).getNumVertices(); v++) {
-                        floatTuple = matGroupObj.getVertex(matGroupObj.getFace(i).getVertexIndex(v));
+                    ObjFace face = matGroupObj.getFace(i);
+                    for (v = 0; v < face.getNumVertices(); v++) {
+                        floatTuple = matGroupObj.getVertex(face.getVertexIndex(v));
                         vertex = new Vec3f(floatTuple.getX(), floatTuple.getY(), floatTuple.getZ());
-                        normal = matGroupObj.getNormal(matGroupObj.getFace(i).getNormalIndex(v));
+                        normal = matGroupObj.getNormal(face.getNormalIndex(v));
 
                         addVertex(i, v, vertex, normal, emitter, matGroupObj, false, bakeSettings);
 
                         // Special conversion of triangles to quads: re-add third vertex as the fourth vertex
                         // Moved into the loop so that `vertex` and `normal` are guaranteed to exist
-                        if (v == 2 && matGroupObj.getFace(i).getNumVertices() == 3) {
+                        if (v == 2 && face.getNumVertices() == 3) {
                             addVertex (i, 3, vertex, normal, emitter, matGroupObj, true, bakeSettings);
                         }
                     }
@@ -126,6 +129,7 @@ public class OBJUnbakedModel extends JsonUnbakedModel {
                     emitter.spriteColor(0, color, color, color, color);
                     emitter.material(RendererAccess.INSTANCE.getRenderer().materialFinder().find());
                     emitter.colorIndex(mtl.getTintIndex());
+                    emitter.lightmap(luminosity, luminosity, luminosity, luminosity);
                     emitter.nominalFace(emitter.lightFace());
                     emitter.spriteBake(0, mtlSprite, MutableQuadView.BAKE_NORMALIZED | (bakeSettings.isUvLocked() ? MutableQuadView.BAKE_LOCK_UV : 0));
 

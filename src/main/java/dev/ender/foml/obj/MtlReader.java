@@ -181,6 +181,11 @@ public class MtlReader
             {
                 currentMtl.setUseDiffuseColor();
             }
+            else if (identifier.equalsIgnoreCase("illum"))
+            {
+                int illum = parseInt(st.nextToken());
+                currentMtl.setIllum(illum);
+            }
         }
 
         return mtlList;
@@ -226,7 +231,7 @@ public class MtlReader
         }
     }
 
-
+    
     /**
      * Private constructor to prevent instantiation
      */

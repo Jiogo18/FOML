@@ -7,6 +7,7 @@ public class FOMLMaterial implements Mtl {
     private final Mtl material;
     private int tintIndex = -1;
     private boolean useDiffuseColor = false;
+    private int illum = 1;
 
     public FOMLMaterial(Mtl material) {
         this.material = material;
@@ -91,5 +92,13 @@ public class FOMLMaterial implements Mtl {
 
     public void setUseDiffuseColor() {
         this.useDiffuseColor = true;
+    }
+
+    public int getIllum() {
+        return this.illum;
+    }
+
+    public void setIllum(int illum) {
+        this.illum = illum;
     }
 }
